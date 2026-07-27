@@ -12,7 +12,7 @@
 
 **Smart ALPR System** adalah sistem cerdas _end-to-end_ untuk mendeteksi kendaraan, memotong (_crop_) area plat nomor secara akurat, dan membaca teks plat nomor kendaraan Indonesia secara dinamis di lingkungan _real-world_.
 
-Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOLOv8 dan keakuratan pembacaan teks **PaddleOCR**, dibungkus dalam antarmuka web modern berbasi Streamlit (menggunakan gaya _Glassmorphism_).
+Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOLOv8 dan keakuratan pembacaan teks **PaddleOCR**, dibungkus dalam antarmuka web modern berbasis Streamlit (menggunakan gaya _Glassmorphism_).
 
 ---
 
@@ -31,7 +31,7 @@ Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOL
 - **Computer Vision Framework:** [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (Detection & Segmentation).
 - **OCR Engine:** [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) (Jauh lebih unggul dibanding Tesseract untuk bacaan _in-the-wild_).
 - **Web Framework:** [Streamlit](https://streamlit.io/) (Untuk Frontend UI).
-- **Image Processing:** OpenCV (`cv2`) & NumPy (Penerapan _Unsharp Masking_ pada plat sebelum di-OCR).
+- **Image Processing:** OpenCV (`cv2`) & NumPy (Untuk pre-processing dan ekstraksi potongan pelat nomor secara presisi sebelum diumpankan ke OCR).
 
 ---
 
