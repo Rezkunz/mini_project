@@ -17,75 +17,20 @@ def similar(a, b):
 def format_indo_plate(text):
     text = text.upper().strip()
     
-    # 1. Coba memisahkan berdasarkan spasi terlebih dahulu. 
-    # PaddleOCR biasanya cukup akurat memberikan spasi antar blok plat nomor.
-    parts = text.split()
+    # Jangan aneh-aneh! Hapus karakter non-alfanumerik saja
+    clean_text = re.sub(r'[^A-Z0-9]', '', text)
     
-    if len(parts) >= 2:
-        prefix_raw = parts[0]
-        
-        # Jika karakter pertama adalah angka, mungkin ia salah baca huruf (misal '1' dibaca dari 'L')
-        if prefix_raw[0] in '0123456789':
-            confusion_map = {'1': 'L', '0': 'D', '8': 'B', '2': 'Z', '4': 'A', '5': 'S', '6': 'G', '7': 'T'}
-            prefix_raw = confusion_map.get(prefix_raw[0], prefix_raw[0]) + prefix_raw[1:]
-            
-        # Prefix plat nomor Indonesia HANYA huruf. Hapus angka yang ikut menempel (seperti '1' pada 'E1')
-        prefix = re.sub(r'[^A-Z]', '', prefix_raw)[:2]
-        
-        # Sisanya gabungkan kembali untuk dicari angka dan suffixnya
-        rest = "".join(parts[1:])
-        
-        # Pisahkan angka (maksimal 4 digit) dengan sisa huruf di belakangnya
-        match = re.search(r'^(\d{1,4})(.*)$', rest)
-        if match and prefix:
-            numbers = match.group(1)
-            suffix_raw = match.group(2)
-            
-            # Koreksi angka yang salah baca di bagian huruf belakang
-            suffix_correction = {'0': 'O', '1': 'I', '2': 'Z', '4': 'A', '5': 'S', '8': 'B'}
-            for digit, letter in suffix_correction.items():
-                suffix_raw = suffix_raw.replace(digit, letter)
-                
-            suffix = re.sub(r'[^A-Z]', '', suffix_raw)[:3]
-            
-            # Koreksi khusus awalan wilayah (misal C pasti dari G)
-            letter_confusion = {'C': 'G'}
-            if prefix and prefix[0] in letter_confusion:
-                prefix = letter_confusion[prefix[0]] + prefix[1:]
-                
-            return f"{prefix} {numbers} {suffix}".strip()
-            
-    # 2. Fallback (Jika spasi tidak terbaca jelas atau format melenceng jauh)
-    original_cleaned = re.sub(r'[^A-Z0-9]', '', text)
-    
-    if re.fullmatch(r'\d{1,2}[A-Z]{1,2}', original_cleaned):
-        match_rev = re.search(r'^(\d{1,2})([A-Z]{1,2})$', original_cleaned)
-        return f"{match_rev.group(2)} {match_rev.group(1)}"
-
-    cleaned = original_cleaned
-    if cleaned and cleaned[0] in '0123456789':
-        confusion_map = {'1': 'L', '0': 'D', '8': 'B', '2': 'Z', '4': 'A', '5': 'S', '6': 'G', '7': 'T'}
-        cleaned = confusion_map.get(cleaned[0], cleaned[0]) + cleaned[1:]
-
-    letter_confusion = {'C': 'G'}
-    if cleaned and cleaned[0] in letter_confusion:
-        cleaned = letter_confusion[cleaned[0]] + cleaned[1:]
-        
-    match = re.search(r'^([A-Z]{1,2})(\d{1,4})(.*)$', cleaned)
+    # Coba ekstrak pola standar Indo: Huruf - Angka - Huruf
+    match = re.match(r'^([A-Z]{1,2})(\d{1,4})([A-Z]{0,3})$', clean_text)
     if match:
-        prefix = match.group(1)
-        numbers = match.group(2)
-        suffix = match.group(3)
+        return f"{match.group(1)} {match.group(2)} {match.group(3)}".strip()
         
-        suffix_correction = {'0': 'O', '1': 'I', '2': 'Z', '4': 'A', '5': 'S', '8': 'B'}
-        for digit, letter in suffix_correction.items():
-            suffix = suffix.replace(digit, letter)
-            
-        suffix = re.sub(r'[^A-Z]', '', suffix)[:3] 
+    # Jika pola tidak standar, pisahkan blok huruf dan blok angka dengan spasi agar rapi
+    parts = re.findall(r'[A-Z]+|\d+', clean_text)
+    if parts:
+        return " ".join(parts)
         
-        return f"{prefix} {numbers} {suffix}".strip()
-        
-    return text.upper().strip()
+    return clean_text
 
 def is_valid_plate(text):
     cleaned = text.replace(" ", "")
@@ -351,7 +296,9 @@ else:
             plate_crop = clean_frame[c_py1:c_py2, c_px1:c_px2]
             
             if plate_crop.size > 0:
-                enhanced_img = enhance_plate(plate_crop)
+                # Kita gunakan gambar crop ASLI tanpa unsharp masking yang "aneh-aneh"
+                # karena unsharp masking terlalu agresif dan menyebabkan OCR berhalusinasi.
+                enhanced_img = plate_crop
                 
                 if associated_track_id not in best_plates or plate_area > best_plates[associated_track_id]["area"]:
                     best_plates[associated_track_id] = {
