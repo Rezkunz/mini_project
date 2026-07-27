@@ -22,6 +22,7 @@ def format_indo_plate(text):
     parts = text.split()
     
     if len(parts) >= 2:
+        # KOREKSI PREFIX
         prefix_raw = parts[0]
         # Hanya koreksi jika blok pertama panjangnya 1-2 karakter (kemungkinan besar kode wilayah)
         # Ini mencegah 1926 WMJ berubah menjadi L 926 WMJ
@@ -31,6 +32,16 @@ def format_indo_plate(text):
             for char in prefix_raw:
                 new_prefix += confusion_map.get(char, char)
             parts[0] = new_prefix
+            
+        # KOREKSI SUFFIX
+        # Koreksi SETIAP karakter di blok TERAKHIR jika panjangnya <= 3 dan blok sebelumnya adalah angka
+        suffix_raw = parts[-1]
+        if re.match(r'^\d+$', parts[-2]) and len(suffix_raw) <= 3:
+            suffix_confusion = {'0': 'O', '1': 'I', '2': 'Z', '4': 'A', '5': 'S', '8': 'B'}
+            new_suffix = ''
+            for char in suffix_raw:
+                new_suffix += suffix_confusion.get(char, char)
+            parts[-1] = new_suffix
             
         text = "".join(parts)
     else:
