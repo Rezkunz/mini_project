@@ -20,7 +20,7 @@ Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOL
 
 - **Deteksi Presisi Tinggi:** Mampu mendeteksi berbagai jenis kendaraan (Mobil, Motor, Truk, Bus) sekaligus memotong plat nomornya.
 - **Optical Character Recognition (OCR):** Menggunakan PaddleOCR yang telah di-tuning agresif (Binarization & Box Thresh rendah) agar tangguh membaca font plat nomor yang tipis atau miring.
-- **Logika Format Indonesia:** Hasil bacaan mentah dari OCR tidak langsung ditelan mentah-mentah. Sistem memiliki fungsi Regex pintar yang akan mengoreksi salah baca (contoh: huruf 'O' terbaca angka '0') dan merapikannya ke format resmi (misal: `B 1234 ABC`).
+- **Smart Context-Aware Formatting:** Hasil bacaan mentah dari OCR tidak ditelan mentah-mentah. Sistem dibekali logika berbasis blok (_Prefix - Number - Suffix_) yang sangat cerdas untuk membedakan huruf dan angka berdasarkan posisinya. Sistem secara otomatis memperbaiki kebingungan OCR secara presisi (contoh: angka `6` di blok depan dikoreksi menjadi kode wilayah `G`, angka `0` di blok belakang dikoreksi menjadi `O`), tanpa pernah merusak blok angka seri murni. Hasil akhirnya dijamin rapi dan valid (misal: `W 1185 ZO`).
 - **UI/UX Premium:** Antarmuka bergaya _Glassmorphism_ (efek tembus pandang/kaca) dengan tata letak hasil dalam bentuk Tabel, memberikan impresi profesional seperti aplikasi tingkat _Enterprise_.
 - **Super Cepat:** Menggunakan varian `YOLOv8s-seg` yang jauh lebih ringan dibanding model konvensional, sangat cocok untuk inferensi dengan CPU maupun GPU.
 
