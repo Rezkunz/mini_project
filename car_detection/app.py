@@ -246,12 +246,9 @@ def load_models():
     if os.path.exists(plate_weights_path):
         plate_model = YOLO(plate_weights_path)
         
-    # Tingkatkan akurasi menggunakan versi v4 mobile (tetap ringan tapi jauh lebih pintar dari v3)
+    # Mengembalikan OCR ke versi default (Awal) yang memiliki akurasi paling tinggi
     reader = PaddleOCR(
-        ocr_version='PP-OCRv4',
-        use_doc_orientation_classify=False, 
         use_textline_orientation=False, 
-        use_doc_unwarping=False,         # Mencegah download UVDoc yang super berat
         lang='en', 
         enable_mkldnn=False
     )
