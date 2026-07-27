@@ -17,20 +17,75 @@ def similar(a, b):
 def format_indo_plate(text):
     text = text.upper().strip()
     
-    # Jangan aneh-aneh! Hapus karakter non-alfanumerik saja
-    clean_text = re.sub(r'[^A-Z0-9]', '', text)
+    # 1. Coba memisahkan berdasarkan spasi terlebih dahulu. 
+    # PaddleOCR biasanya cukup akurat memberikan spasi antar blok plat nomor.
+    parts = text.split()
     
-    # Coba ekstrak pola standar Indo: Huruf - Angka - Huruf
-    match = re.match(r'^([A-Z]{1,2})(\d{1,4})([A-Z]{0,3})$', clean_text)
+    if len(parts) >= 2:
+        prefix_raw = parts[0]
+        
+        # Jika karakter pertama adalah angka, mungkin ia salah baca huruf (misal '1' dibaca dari 'L')
+        if prefix_raw[0] in '0123456789':
+            confusion_map = {'1': 'L', '0': 'D', '8': 'B', '2': 'Z', '4': 'A', '5': 'S', '6': 'G', '7': 'T'}
+            prefix_raw = confusion_map.get(prefix_raw[0], prefix_raw[0]) + prefix_raw[1:]
+            
+        # Prefix plat nomor Indonesia HANYA huruf. Hapus angka yang ikut menempel (seperti '1' pada 'E1')
+        prefix = re.sub(r'[^A-Z]', '', prefix_raw)[:2]
+        
+        # Sisanya gabungkan kembali untuk dicari angka dan suffixnya
+        rest = "".join(parts[1:])
+        
+        # Pisahkan angka (maksimal 4 digit) dengan sisa huruf di belakangnya
+        match = re.search(r'^(\d{1,4})(.*)$', rest)
+        if match and prefix:
+            numbers = match.group(1)
+            suffix_raw = match.group(2)
+            
+            # Koreksi angka yang salah baca di bagian huruf belakang
+            suffix_correction = {'0': 'O', '1': 'I', '2': 'Z', '4': 'A', '5': 'S', '8': 'B'}
+            for digit, letter in suffix_correction.items():
+                suffix_raw = suffix_raw.replace(digit, letter)
+                
+            suffix = re.sub(r'[^A-Z]', '', suffix_raw)[:3]
+            
+            # Koreksi khusus awalan wilayah (misal C pasti dari G)
+            letter_confusion = {'C': 'G'}
+            if prefix and prefix[0] in letter_confusion:
+                prefix = letter_confusion[prefix[0]] + prefix[1:]
+                
+            return f"{prefix} {numbers} {suffix}".strip()
+            
+    # 2. Fallback (Jika spasi tidak terbaca jelas atau format melenceng jauh)
+    original_cleaned = re.sub(r'[^A-Z0-9]', '', text)
+    
+    if re.fullmatch(r'\d{1,2}[A-Z]{1,2}', original_cleaned):
+        match_rev = re.search(r'^(\d{1,2})([A-Z]{1,2})$', original_cleaned)
+        return f"{match_rev.group(2)} {match_rev.group(1)}"
+
+    cleaned = original_cleaned
+    if cleaned and cleaned[0] in '0123456789':
+        confusion_map = {'1': 'L', '0': 'D', '8': 'B', '2': 'Z', '4': 'A', '5': 'S', '6': 'G', '7': 'T'}
+        cleaned = confusion_map.get(cleaned[0], cleaned[0]) + cleaned[1:]
+
+    letter_confusion = {'C': 'G'}
+    if cleaned and cleaned[0] in letter_confusion:
+        cleaned = letter_confusion[cleaned[0]] + cleaned[1:]
+        
+    match = re.search(r'^([A-Z]{1,2})(\d{1,4})(.*)$', cleaned)
     if match:
-        return f"{match.group(1)} {match.group(2)} {match.group(3)}".strip()
+        prefix = match.group(1)
+        numbers = match.group(2)
+        suffix = match.group(3)
         
-    # Jika pola tidak standar, pisahkan blok huruf dan blok angka dengan spasi agar rapi
-    parts = re.findall(r'[A-Z]+|\d+', clean_text)
-    if parts:
-        return " ".join(parts)
+        suffix_correction = {'0': 'O', '1': 'I', '2': 'Z', '4': 'A', '5': 'S', '8': 'B'}
+        for digit, letter in suffix_correction.items():
+            suffix = suffix.replace(digit, letter)
+            
+        suffix = re.sub(r'[^A-Z]', '', suffix)[:3] 
         
-    return clean_text
+        return f"{prefix} {numbers} {suffix}".strip()
+        
+    return text.upper().strip()
 
 def is_valid_plate(text):
     cleaned = text.replace(" ", "")
@@ -182,21 +237,25 @@ if module != "🚗 License Plate Recognition":
 @st.cache_resource
 def load_models():
     # Load Vehicle Detection Model (Instance Segmentation)
-    # Diganti ke yolov8n-seg.pt (Nano) untuk menghemat RAM di Streamlit Cloud (batas 1GB)
-    vehicle_model = YOLO('yolov8n-seg.pt') 
+    # Diganti dari yolov8m-seg.pt ke yolov8s-seg.pt agar inferensi jauh lebih cepat
+    vehicle_model = YOLO('yolov8s-seg.pt') 
     
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    plate_weights_path = os.path.join(BASE_DIR, "runs", "detect", "car_plate_detection", "yolov8_plate_indo", "weights", "best.pt")
+    plate_weights_path = "runs/detect/car_plate_detection/yolov8_plate_indo/weights/best.pt"
     plate_model = None
     if os.path.exists(plate_weights_path):
         plate_model = YOLO(plate_weights_path)
         
-    # Mengembalikan OCR ke versi default (Awal) yang memiliki akurasi paling tinggi
+    # Parameter det_db_box_thresh dan det_db_thresh diturunkan drastis agar PaddleOCR 
+    # menjadi super sensitif dan tidak membuang teks kecil atau tipis (seperti angka '7' sendirian).
     reader = PaddleOCR(
+        use_doc_orientation_classify=False, 
         use_textline_orientation=False, 
         lang='en', 
-        enable_mkldnn=False
-    )
+        enable_mkldnn=False,
+        det_db_thresh=0.1,       # Binarization threshold lebih rendah (default 0.3)
+        det_db_box_thresh=0.2,   # Score minimal bounding box lebih rendah (default 0.6)
+        det_db_unclip_ratio=2.0  # Expand box sedikit lebih lebar
+    ) 
     
     return vehicle_model, plate_model, reader
 
@@ -296,9 +355,7 @@ else:
             plate_crop = clean_frame[c_py1:c_py2, c_px1:c_px2]
             
             if plate_crop.size > 0:
-                # Kita gunakan gambar crop ASLI tanpa unsharp masking yang "aneh-aneh"
-                # karena unsharp masking terlalu agresif dan menyebabkan OCR berhalusinasi.
-                enhanced_img = plate_crop
+                enhanced_img = enhance_plate(plate_crop)
                 
                 if associated_track_id not in best_plates or plate_area > best_plates[associated_track_id]["area"]:
                     best_plates[associated_track_id] = {
@@ -314,19 +371,13 @@ else:
         uploaded_file = st.file_uploader("Unggah gambar...", type=["jpg", "jpeg", "png"])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
-            st.image(image, caption='Gambar yang diunggah', width='stretch')
+            st.image(image, caption='Gambar yang diunggah', use_container_width=True)
             
             if st.button('Proses'):
                 best_plates.clear() 
                 with st.spinner('Memproses Kendaraan dan OCR...'):
                     img_array = np.array(image)
                     img_cv2 = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-                    
-                    # Resize gambar yang terlalu besar (misal 4K) ke max 1280px agar tidak kehabisan RAM
-                    h, w = img_cv2.shape[:2]
-                    if max(h, w) > 1280:
-                        scale = 1280 / max(h, w)
-                        img_cv2 = cv2.resize(img_cv2, (int(w * scale), int(h * scale)))
                     
                     processed_frame = process_frame_tracking(img_cv2, is_video=False)
                     
@@ -407,7 +458,7 @@ else:
                     results_list = list(unique_plates.values())
                     
                     processed_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-                    st.image(processed_rgb, caption='Hasil ALPR', width='stretch')
+                    st.image(processed_rgb, caption='Hasil ALPR', use_container_width=True)
                     
                     # DEBUG: Tampilkan apa yang PaddleOCR baca
                     with st.expander("Lihat Analisis OCR"):
