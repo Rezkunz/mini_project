@@ -17,20 +17,36 @@ def similar(a, b):
 def format_indo_plate(text):
     text = text.upper().strip()
     
-    # Hapus karakter non-alfanumerik
-    clean_text = re.sub(r'[^A-Z0-9]', '', text)
+    # Bersihkan dari simbol aneh tapi pertahankan spasi
+    text = re.sub(r'[^A-Z0-9\s]', '', text)
+    parts = text.split()
     
+    if len(parts) >= 2:
+        prefix_raw = parts[0]
+        # Hanya koreksi jika blok pertama panjangnya 1-2 karakter (kemungkinan besar kode wilayah)
+        # Ini mencegah 1926 WMJ berubah menjadi L 926 WMJ
+        if len(prefix_raw) <= 2:
+            confusion_map = {'1': 'L', '0': 'D', '8': 'B', '2': 'Z', '4': 'A', '5': 'S', '6': 'G', '7': 'T', '9': 'B'}
+            new_prefix = ''
+            for char in prefix_raw:
+                new_prefix += confusion_map.get(char, char)
+            parts[0] = new_prefix
+            
+        text = "".join(parts)
+    else:
+        text = text.replace(" ", "")
+        
     # Coba ekstrak pola standar Indo: Huruf - Angka - Huruf
-    match = re.match(r'^([A-Z]{1,2})(\d{1,4})([A-Z]{0,3})$', clean_text)
+    match = re.match(r'^([A-Z]{1,2})(\d{1,4})([A-Z]{0,3})$', text)
     if match:
         return f"{match.group(1)} {match.group(2)} {match.group(3)}".strip()
         
     # Jika pola tidak standar, pisahkan huruf dan angka dengan spasi agar rapi
-    parts = re.findall(r'[A-Z]+|\d+', clean_text)
+    parts = re.findall(r'[A-Z]+|\d+', text)
     if parts:
         return " ".join(parts)
         
-    return clean_text
+    return text
 
 def is_valid_plate(text):
     cleaned = text.replace(" ", "")
