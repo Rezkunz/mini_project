@@ -8,17 +8,11 @@
   <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" />
 </div>
 
-<div align="center">
-  <a href="https://alprsystem.streamlit.app/">
-    <img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg" alt="Open in Streamlit">
-  </a>
-</div>
-
 <br>
 
-**Smart ALPR System** adalah sistem cerdas *end-to-end* untuk mendeteksi kendaraan, memotong (*crop*) area plat nomor secara akurat, dan membaca teks plat nomor kendaraan Indonesia secara dinamis di lingkungan *real-world*.
+**Smart ALPR System** adalah sistem cerdas _end-to-end_ untuk mendeteksi kendaraan, memotong (_crop_) area plat nomor secara akurat, dan membaca teks plat nomor kendaraan Indonesia secara dinamis di lingkungan _real-world_.
 
-Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOLOv8 dan keakuratan pembacaan teks **PaddleOCR**, dibungkus dalam antarmuka web modern berbasi Streamlit (menggunakan gaya *Glassmorphism*).
+Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOLOv8 dan keakuratan pembacaan teks **PaddleOCR**, dibungkus dalam antarmuka web modern berbasi Streamlit (menggunakan gaya _Glassmorphism_).
 
 ---
 
@@ -27,31 +21,33 @@ Proyek ini dibangun dengan memadukan kekuatan **Instance Segmentation** dari YOL
 - **Deteksi Presisi Tinggi:** Mampu mendeteksi berbagai jenis kendaraan (Mobil, Motor, Truk, Bus) sekaligus memotong plat nomornya.
 - **Optical Character Recognition (OCR):** Menggunakan PaddleOCR yang telah di-tuning agresif (Binarization & Box Thresh rendah) agar tangguh membaca font plat nomor yang tipis atau miring.
 - **Logika Format Indonesia:** Hasil bacaan mentah dari OCR tidak langsung ditelan mentah-mentah. Sistem memiliki fungsi Regex pintar yang akan mengoreksi salah baca (contoh: huruf 'O' terbaca angka '0') dan merapikannya ke format resmi (misal: `B 1234 ABC`).
-- **UI/UX Premium:** Antarmuka bergaya *Glassmorphism* (efek tembus pandang/kaca) dengan tata letak hasil dalam bentuk Tabel, memberikan impresi profesional seperti aplikasi tingkat *Enterprise*.
+- **UI/UX Premium:** Antarmuka bergaya _Glassmorphism_ (efek tembus pandang/kaca) dengan tata letak hasil dalam bentuk Tabel, memberikan impresi profesional seperti aplikasi tingkat _Enterprise_.
 - **Super Cepat:** Menggunakan varian `YOLOv8s-seg` yang jauh lebih ringan dibanding model konvensional, sangat cocok untuk inferensi dengan CPU maupun GPU.
 
 ---
 
 ## Teknologi yang Digunakan
 
-*   **Computer Vision Framework:** [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (Detection & Segmentation).
-*   **OCR Engine:** [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) (Jauh lebih unggul dibanding Tesseract untuk bacaan *in-the-wild*).
-*   **Web Framework:** [Streamlit](https://streamlit.io/) (Untuk Frontend UI).
-*   **Image Processing:** OpenCV (`cv2`) & NumPy (Penerapan *Unsharp Masking* pada plat sebelum di-OCR).
+- **Computer Vision Framework:** [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (Detection & Segmentation).
+- **OCR Engine:** [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) (Jauh lebih unggul dibanding Tesseract untuk bacaan _in-the-wild_).
+- **Web Framework:** [Streamlit](https://streamlit.io/) (Untuk Frontend UI).
+- **Image Processing:** OpenCV (`cv2`) & NumPy (Penerapan _Unsharp Masking_ pada plat sebelum di-OCR).
 
 ---
 
 ## Instalasi
 
-Ikuti langkah-langkah di bawah ini untuk menjalankan *project* ini di komputer/laptop Anda secara lokal:
+Ikuti langkah-langkah di bawah ini untuk menjalankan _project_ ini di komputer/laptop Anda secara lokal:
 
 1. **Clone Repository**
+
    ```bash
    git clone https://github.com/Rezkunz/mini_project.git
    cd mini_project
    ```
 
 2. **Buat Virtual Environment (Opsional tapi Direkomendasikan)**
+
    ```bash
    python -m venv venv
    # Untuk Windows:
@@ -64,7 +60,7 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan *project* ini di komputer/l
    ```bash
    pip install -r requirements.txt
    ```
-   *(Pastikan koneksi internet stabil karena PaddleOCR dan PyTorch membutuhkan ukuran download yang cukup besar).*
+   _(Pastikan koneksi internet stabil karena PaddleOCR dan PyTorch membutuhkan ukuran download yang cukup besar)._
 
 ---
 
@@ -77,32 +73,36 @@ python -m streamlit run app.py
 ```
 
 **Panduan Penggunaan di Browser:**
+
 1. Halaman web akan otomatis terbuka di `http://localhost:8501`.
 2. Pada panel navigasi (Sidebar), pilih opsi unggah gambar.
 3. Upload gambar kendaraan (bisa mobil, motor, dll) dari komputer Anda.
 4. Klik tombol **Proses**.
-5. AI akan melakukan *scanning* dan memproses deteksi dalam beberapa detik.
+5. AI akan melakukan _scanning_ dan memproses deteksi dalam beberapa detik.
 6. Hasil pembacaan plat (bersama dengan gambarnya) akan disajikan dalam bentuk Tabel.
 
 ---
 
 ## Hasil Analisis Model
 
-Pelatihan model Plat Nomor dilakukan pada arsitektur `YOLOv8n` dengan iterasi pada dataset plat nomor Indonesia. Berikut adalah grafik metrik performa (*Training Results*):
+Pelatihan model Plat Nomor dilakukan pada arsitektur `YOLOv8n` dengan iterasi pada dataset plat nomor Indonesia. Berikut adalah grafik metrik performa (_Training Results_):
 
 ### 1. Training Metrics (Akurasi & Ketangguhan)
-Berdasarkan log hasil *training* pada *epoch* ke-50, model pendeteksi plat nomor mencetak angka evaluasi yang sangat luar biasa:
-- **Precision (Presisi): 96.19%** — Artinya, dari semua objek yang ditebak sebagai plat nomor, 96.19% di antaranya adalah benar-benar plat nomor (sangat sedikit deteksi palsu / *false positive*).
+
+Berdasarkan log hasil _training_ pada _epoch_ ke-50, model pendeteksi plat nomor mencetak angka evaluasi yang sangat luar biasa:
+
+- **Precision (Presisi): 96.19%** — Artinya, dari semua objek yang ditebak sebagai plat nomor, 96.19% di antaranya adalah benar-benar plat nomor (sangat sedikit deteksi palsu / _false positive_).
 - **Recall (Sensitivitas): 98.62%** — Artinya, model berhasil menemukan 98.62% dari total seluruh plat nomor yang ada di dalam gambar (hampir tidak ada plat yang terlewat).
 - **mAP50 (Mean Average Precision): 99.20%** — Menunjukkan ketangguhan model secara keseluruhan yang nyaris sempurna dalam mengenali area plat nomor pada kondisi standar.
-- **mAP50-95: 74.30%** — Menunjukkan bahwa *bounding box* (kotak deteksi) sangat ketat dan presisi menempel pada objek plat nomor.
+- **mAP50-95: 74.30%** — Menunjukkan bahwa _bounding box_ (kotak deteksi) sangat ketat dan presisi menempel pada objek plat nomor.
 
-Grafik di bawah ini memvisualisasikan penurunan tingkat kesalahan (*Loss*) secara konsisten selama iterasi *training*. Ini membuktikan bahwa model tidak mengalami *overfitting* dan belajar dengan sangat stabil.
+Grafik di bawah ini memvisualisasikan penurunan tingkat kesalahan (_Loss_) secara konsisten selama iterasi _training_. Ini membuktikan bahwa model tidak mengalami _overfitting_ dan belajar dengan sangat stabil.
 
 ![Training Results](assets/results.png)
 
 ### 2. Confusion Matrix
-Matrix kebingungan (*Confusion Matrix*) menunjukkan betapa akuratnya model dalam memprediksi kelas target (Plat Nomor) tanpa banyak melakukan *False Positive* pada latar belakang (*background*).
+
+Matrix kebingungan (_Confusion Matrix_) menunjukkan betapa akuratnya model dalam memprediksi kelas target (Plat Nomor) tanpa banyak melakukan _False Positive_ pada latar belakang (_background_).
 
 ![Confusion Matrix](assets/confusion_matrix.png)
 
