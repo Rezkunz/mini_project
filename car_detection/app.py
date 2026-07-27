@@ -240,7 +240,8 @@ def load_models():
     # Diganti ke yolov8n-seg.pt (Nano) untuk menghemat RAM di Streamlit Cloud (batas 1GB)
     vehicle_model = YOLO('yolov8n-seg.pt') 
     
-    plate_weights_path = "runs/detect/car_plate_detection/yolov8_plate_indo/weights/best.pt"
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    plate_weights_path = os.path.join(BASE_DIR, "runs", "detect", "car_plate_detection", "yolov8_plate_indo", "weights", "best.pt")
     plate_model = None
     if os.path.exists(plate_weights_path):
         plate_model = YOLO(plate_weights_path)
