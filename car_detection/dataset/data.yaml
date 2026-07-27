@@ -1,0 +1,14 @@
+path: e:/MINI_PROJECT/car_detection/dataset
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+names: ['Plates']
+
+roboflow:
+  workspace: nimaworkspace01
+  project: persian-car-plates-qyefp
+  version: 3
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/nimaworkspace01/persian-car-plates-qyefp/dataset/3

@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.streamlit/
+runs/detect/*/labels/
+runs/detect/*/images/
+*.jpg
+*.png
+!eda_output.png
