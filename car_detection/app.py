@@ -250,12 +250,10 @@ def load_models():
     # Parameter det_db_box_thresh dan det_db_thresh diturunkan drastis agar PaddleOCR 
     # menjadi super sensitif dan tidak membuang teks kecil atau tipis (seperti angka '7' sendirian).
     reader = PaddleOCR(
-        use_angle_cls=False,     # Matikan angle classifier untuk hemat RAM server
         use_doc_orientation_classify=False, 
         use_textline_orientation=False, 
         lang='en', 
         enable_mkldnn=False,
-        show_log=False,          # Kurangi spam log
         det_db_thresh=0.1,       # Binarization threshold lebih rendah (default 0.3)
         det_db_box_thresh=0.2,   # Score minimal bounding box lebih rendah (default 0.6)
         det_db_unclip_ratio=2.0  # Expand box sedikit lebih lebar
