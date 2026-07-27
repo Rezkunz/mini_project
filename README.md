@@ -84,15 +84,21 @@ python -m streamlit run app.py
 
 Pelatihan model Plat Nomor dilakukan pada arsitektur `YOLOv8n` dengan iterasi pada dataset plat nomor Indonesia. Berikut adalah grafik metrik performa (*Training Results*):
 
-### 1. Training Metrics (Loss & mAP)
-Grafik di bawah ini menunjukkan penurunan tingkat kesalahan (*Loss*) secara konsisten selama iterasi *training*, serta nilai presisi rata-rata (mAP50) yang mendekati **0.9** ke atas. Ini membuktikan bahwa model tidak mengalami *overfitting*.
+### 1. Training Metrics (Akurasi & Ketangguhan)
+Berdasarkan log hasil *training* pada *epoch* ke-50, model pendeteksi plat nomor mencetak angka evaluasi yang sangat luar biasa:
+- **Precision (Presisi): 96.19%** — Artinya, dari semua objek yang ditebak sebagai plat nomor, 96.19% di antaranya adalah benar-benar plat nomor (sangat sedikit deteksi palsu / *false positive*).
+- **Recall (Sensitivitas): 98.62%** — Artinya, model berhasil menemukan 98.62% dari total seluruh plat nomor yang ada di dalam gambar (hampir tidak ada plat yang terlewat).
+- **mAP50 (Mean Average Precision): 99.20%** — Menunjukkan ketangguhan model secara keseluruhan yang nyaris sempurna dalam mengenali area plat nomor pada kondisi standar.
+- **mAP50-95: 74.30%** — Menunjukkan bahwa *bounding box* (kotak deteksi) sangat ketat dan presisi menempel pada objek plat nomor.
 
-![Training Results](runs/detect/car_plate_detection/yolov8_plate_indo/results.png)
+Grafik di bawah ini memvisualisasikan penurunan tingkat kesalahan (*Loss*) secara konsisten selama iterasi *training*. Ini membuktikan bahwa model tidak mengalami *overfitting* dan belajar dengan sangat stabil.
+
+![Training Results](assets/results.png)
 
 ### 2. Confusion Matrix
 Matrix kebingungan (*Confusion Matrix*) menunjukkan betapa akuratnya model dalam memprediksi kelas target (Plat Nomor) tanpa banyak melakukan *False Positive* pada latar belakang (*background*).
 
-![Confusion Matrix](runs/detect/car_plate_detection/yolov8_plate_indo/confusion_matrix.png)
+![Confusion Matrix](assets/confusion_matrix.png)
 
 ---
 
