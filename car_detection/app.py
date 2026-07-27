@@ -250,8 +250,10 @@ def load_models():
     # Parameter det_db_box_thresh dan det_db_thresh diturunkan drastis agar PaddleOCR 
     # menjadi super sensitif dan tidak membuang teks kecil atau tipis (seperti angka '7' sendirian).
     reader = PaddleOCR(
+        ocr_version='PP-OCRv3',          # PAKSA MENGGUNAKAN VERSI MOBILE YANG SANGAT RINGAN
         use_doc_orientation_classify=False, 
         use_textline_orientation=False, 
+        use_doc_unwarping=False,         # Mencegah download UVDoc yang super berat
         lang='en', 
         enable_mkldnn=False,
         det_db_thresh=0.1,       # Binarization threshold lebih rendah (default 0.3)
@@ -373,7 +375,7 @@ else:
         uploaded_file = st.file_uploader("Unggah gambar...", type=["jpg", "jpeg", "png"])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
-            st.image(image, caption='Gambar yang diunggah', use_container_width=True)
+            st.image(image, caption='Gambar yang diunggah', width='stretch')
             
             if st.button('Proses'):
                 best_plates.clear() 
@@ -466,7 +468,7 @@ else:
                     results_list = list(unique_plates.values())
                     
                     processed_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-                    st.image(processed_rgb, caption='Hasil ALPR', use_container_width=True)
+                    st.image(processed_rgb, caption='Hasil ALPR', width='stretch')
                     
                     # DEBUG: Tampilkan apa yang PaddleOCR baca
                     with st.expander("Lihat Analisis OCR"):
