@@ -240,7 +240,9 @@ def load_models():
     # Diganti dari yolov8m-seg.pt ke yolov8s-seg.pt agar inferensi jauh lebih cepat
     vehicle_model = YOLO('yolov8s-seg.pt') 
     
-    plate_weights_path = "runs/detect/car_plate_detection/yolov8_plate_indo/weights/best.pt"
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    plate_weights_path = os.path.join(BASE_DIR, "runs", "detect", "car_plate_detection", "yolov8_plate_indo", "weights", "best.pt")
+    
     plate_model = None
     if os.path.exists(plate_weights_path):
         plate_model = YOLO(plate_weights_path)
