@@ -237,8 +237,8 @@ if module != "🚗 License Plate Recognition":
 @st.cache_resource
 def load_models():
     # Load Vehicle Detection Model (Instance Segmentation)
-    # Diganti dari yolov8m-seg.pt ke yolov8s-seg.pt agar inferensi jauh lebih cepat
-    vehicle_model = YOLO('yolov8s-seg.pt') 
+    # Diganti ke yolov8n-seg.pt (Nano) untuk menghemat RAM di Streamlit Cloud (batas 1GB)
+    vehicle_model = YOLO('yolov8n-seg.pt') 
     
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     plate_weights_path = os.path.join(BASE_DIR, "runs", "detect", "car_plate_detection", "yolov8_plate_indo", "weights", "best.pt")
@@ -250,10 +250,12 @@ def load_models():
     # Parameter det_db_box_thresh dan det_db_thresh diturunkan drastis agar PaddleOCR 
     # menjadi super sensitif dan tidak membuang teks kecil atau tipis (seperti angka '7' sendirian).
     reader = PaddleOCR(
+        use_angle_cls=False,     # Matikan angle classifier untuk hemat RAM server
         use_doc_orientation_classify=False, 
         use_textline_orientation=False, 
         lang='en', 
         enable_mkldnn=False,
+        show_log=False,          # Kurangi spam log
         det_db_thresh=0.1,       # Binarization threshold lebih rendah (default 0.3)
         det_db_box_thresh=0.2,   # Score minimal bounding box lebih rendah (default 0.6)
         det_db_unclip_ratio=2.0  # Expand box sedikit lebih lebar
@@ -380,6 +382,12 @@ else:
                 with st.spinner('Memproses Kendaraan dan OCR...'):
                     img_array = np.array(image)
                     img_cv2 = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+                    
+                    # Resize gambar yang terlalu besar (misal 4K) ke max 1280px agar tidak kehabisan RAM
+                    h, w = img_cv2.shape[:2]
+                    if max(h, w) > 1280:
+                        scale = 1280 / max(h, w)
+                        img_cv2 = cv2.resize(img_cv2, (int(w * scale), int(h * scale)))
                     
                     processed_frame = process_frame_tracking(img_cv2, is_video=False)
                     

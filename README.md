@@ -8,6 +8,12 @@
   <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" />
 </div>
 
+<div align="center">
+  <a href="https://alprsystem.streamlit.app/">
+    <img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg" alt="Open in Streamlit">
+  </a>
+</div>
+
 <br>
 
 **Smart ALPR System** adalah sistem cerdas *end-to-end* untuk mendeteksi kendaraan, memotong (*crop*) area plat nomor secara akurat, dan membaca teks plat nomor kendaraan Indonesia secara dinamis di lingkungan *real-world*.
