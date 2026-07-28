@@ -1,10 +1,11 @@
+import os
+os.environ["FLAGS_enable_pir_api"] = "0"
+
 import streamlit as st
 from ultralytics import YOLO
 from PIL import Image
 import cv2
 import numpy as np
-import os
-os.environ["FLAGS_enable_pir_api"] = "0"
 import tempfile
 from paddleocr import PaddleOCR
 import re
